@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2026 Vladimir Kapustin
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: MIT
  *
  * AIC — AI Control Tower Configurator
  * Scope: x_aic

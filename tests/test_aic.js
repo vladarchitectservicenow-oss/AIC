@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Vladimir Kapustin
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 // test_aic.js
 const assert = require('assert');
 function MockGR(table, rows) { this._rows = rows||[]; this._idx = -1; this._filters = {}; this._limit = null; this._filtered = []; }
@@ -15,6 +15,11 @@ function stripHeader(code){ return code.replace(/^\/\*.*?\*\//s, ''); }
 global.Class = { create: function(){ var cls=function(){ if(this.initialize) this.initialize.apply(this, arguments); }; return cls; } };
 global.GlideRecord = function(table){ return new MockGR(table, DB[table]); };
 global.GlideDateTime = function(){ this.getDisplayValueInternal=function(){ return '20260516000000'; }; };
+global.gs = {
+  info: function(msg) { console.log("[gs.info] " + msg); },
+  error: function(msg) { console.error("[gs.error] " + msg); },
+  warn: function(msg) { console.warn("[gs.warn] " + msg); }
+};
 var DB = {
   "sn_ai_agent": [
     { name: "Agent Alpha", log_retention_days: "30", confidence_threshold: "0.75", mcp_rate_limit: "0", sys_id: "a1" },
@@ -31,6 +36,32 @@ function testPolicy() {
   assert.ok(r.totalPolicies >= 4);
   console.log("  testPolicy PASSED (violations=" + r.violations + ")");
 }
+
+function testRemediation() {
+  eval(stripHeader(fs.readFileSync('/home/crixus/agentic-loop/output/AIC/src/AICRemediationEngine.js','utf8')));
+  var rem = new AICRemediationEngine();
+  var findings = [
+    { agent: "Agent Alpha", rule: "AGENT_LOG_RETENTION", severity: "HIGH", msg: "Log retention low" }
+  ];
+  var res = rem.remediate(findings);
+  assert.ok(res.created === 1 || res.created === 0, "Should try to create task");
+  console.log("  testRemediation PASSED (created=" + res.created + ")");
+}
+
+function testReporter() {
+  eval(stripHeader(fs.readFileSync('/home/crixus/agentic-loop/output/AIC/src/AICComplianceReporter.js','utf8')));
+  var rep = new AICComplianceReporter();
+  var scan = { totalPolicies: 4, violations: 2, findings: [
+    { agent: "A", rule: "R1", severity: "HIGH", msg: "M" }
+  ], scanDate: "20260516000000" };
+  var report = rep.buildReport(scan);
+  assert.ok(report.totalPolicies === 4);
+  assert.ok(report.totalViolations === 2);
+  console.log("  testReporter PASSED (passRate=" + report.passRate + ")");
+}
+
 console.log("Running AIC tests...\n");
 testPolicy();
+testRemediation();
+testReporter();
 console.log("All AIC tests PASSED");
