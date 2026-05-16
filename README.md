@@ -218,6 +218,44 @@ Contributions are welcome via GitHub issues and pull requests. Please maintain b
 
 Built by Vladimir Kapustin for the ServiceNow open-source community. The project embodies the principle that governance should be automated, auditable, and invisible to the end user—until it matters.
 
+## 15. Detailed Operational Walkthrough
+
+### 15.1 First-Time Setup
+
+After installing the scoped application, navigate to the AIC module within the ServiceNow application navigator. The default policy rule set is preloaded, but administrators can extend it by cloning the AICPolicyEngine script include and appending new rule objects to the POLICY_RULES array. Each rule requires an id, a human-readable message, and a severity level. The engine iterates over these rules for every agent record retrieved from sn_ai_agent, making the system fully declarative.
+
+### 15.2 Scheduled Scanning Pattern
+
+Create a scheduled job in the ServiceNow instance pointing to a background script that instantiates AICPolicyEngine and invokes runPolicyScan(). For continuous governance, a daily scan is recommended. The scan results are lightweight JSON objects that can be persisted to a custom table or sent directly to an integration endpoint. Because all processing occurs inside the ServiceNow platform, there is no network egress for sensitive configuration data.
+
+### 15.3 Audit Trail and Evidence Collection
+
+Compliance is not a snapshot; it is a trail. AIC’s scanDate field, embedded in every report, provides a verifiable timestamp. When combined with ServiceNow’s native audit history on sys_properties and script include modifications, auditors can reconstruct exactly which rules were in force, which versions of the policy engine executed, and what results were generated on any given date. This out-of-the-box auditability eliminates the need for external log management for AI governance evidence.
+
+### 16. Extending the Platform
+
+While AIC ships with four default rules, the true power of the engine lies in its extensibility. Additional rules can cover:
+
+- **Model blacklisting**: Ensures banned models are not referenced in provider configurations.
+- **PII scanning**: Verifies that agents handling sensitive data have classification tags.
+- **Cost thresholds**: Alerts when estimated API cost per agent exceeds a defined budget.
+
+By maintaining a simple checkRule interface, the engine encourages contributors to add domain-specific governance without refactoring the scan loop.
+
+## 17. Performance Considerations
+
+AIC is designed for the ServiceNow platform’s multi-tenant architecture. The scan loop uses standard GlideRecord queries with no unbounded recursion. For instances with hundreds of AI agents, execution completes within seconds. Administrators concerned with scale can leverage the setLimit API in the policy engine or shard scans by agent category. Memory usage is minimal; findings arrays are bounded by the number of rules multiplied by the number of agents.
+
+## 18. Licensing and Redistribution
+
+AIC is released under the MIT License, permitting commercial use, modification, distribution, and private use. Organizations may fork the repository, adapt the rule set for internal compliance frameworks, and redistribute derivative works without copyleft obligations. The only requirement is the retention of the original copyright notice and permission text.
+
+## 19. Call to Action
+
+If your organization is deploying AI agents inside ServiceNow and compliance is still a manual checklist, adopt AIC. Clone the repository, import the scoped application into a subproduction instance, and run the test suite. Tune the rule set to your regulatory context, schedule daily scans, and close the governance gap before auditors knock.
+
+Open-source governance is a community effort. Report issues, propose rules, and share deployment patterns. The faster we automate governance, the safer enterprise AI becomes.
+
 ---
 
 *End of README.*
