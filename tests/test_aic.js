@@ -27,7 +27,7 @@ var DB = {
   ],
   "sn_generative_ai_cfg_provider": [{ sys_id: "p1" }]
 };
-eval(stripHeader(fs.readFileSync('/home/crixus/agentic-loop/output/AIC/src/AICPolicyEngine.js','utf8')));
+eval(stripHeader(fs.readFileSync(__dirname + '/../src/AICPolicyEngine.js','utf8')));
 
 function testPolicy() {
   var e = new AICPolicyEngine();
@@ -38,7 +38,7 @@ function testPolicy() {
 }
 
 function testRemediation() {
-  eval(stripHeader(fs.readFileSync('/home/crixus/agentic-loop/output/AIC/src/AICRemediationEngine.js','utf8')));
+  eval(stripHeader(fs.readFileSync(__dirname + '/../src/AICRemediationEngine.js','utf8')));
   var rem = new AICRemediationEngine();
   var findings = [
     { agent: "Agent Alpha", rule: "AGENT_LOG_RETENTION", severity: "HIGH", msg: "Log retention low" }
@@ -49,7 +49,7 @@ function testRemediation() {
 }
 
 function testReporter() {
-  eval(stripHeader(fs.readFileSync('/home/crixus/agentic-loop/output/AIC/src/AICComplianceReporter.js','utf8')));
+  eval(stripHeader(fs.readFileSync(__dirname + '/../src/AICComplianceReporter.js','utf8')));
   var rep = new AICComplianceReporter();
   var scan = { totalPolicies: 4, violations: 2, findings: [
     { agent: "A", rule: "R1", severity: "HIGH", msg: "M" }
